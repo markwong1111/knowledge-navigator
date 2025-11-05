@@ -156,14 +156,14 @@ function App() {
           </div>
         </div>
       ) : (
-        // Input View - ChatGPT Style
+        // Input View
         <div className="flex-1 flex flex-col">
           {/* Header */}
           <div className="px-4 py-3 border-b">
             <h1 className="text-lg font-semibold text-gray-800">Knowledge Navigator</h1>
           </div>
 
-          {/* Main Content - Centered like ChatGPT */}
+          {/* Main Content */}
           <div className="flex-1 flex items-center justify-center p-4">
             <div className="w-full max-w-3xl">
               {/* Welcome Message */}
@@ -211,43 +211,34 @@ function App() {
                 </div>
               )}
 
-              {/* Input Box - ChatGPT Style */}
+              {/* Input Box */}
               <div className="relative">
-                <div className="relative flex items-end bg-white border border-gray-300 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                <div className="relative flex items-end">
                   <textarea
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Enter text or upload documents..."
                     rows={1}
-                    className="flex-1 p-4 pr-24 resize-none focus:outline-none text-gray-800 max-h-64 overflow-y-auto"
+                    className="flex-1 p-4 pr-24 resize-none focus:outline-none text-gray-800 bg-gray-100 rounded-2xl max-h-64 overflow-y-auto shadow-sm hover:shadow-md transition-shadow"
                     style={{ minHeight: '56px' }}
                     disabled={isGenerating}
-                  />
-                  
-                  <div className="absolute right-2 bottom-2 flex items-center gap-2">
+                  /> 
+                  <div className="absolute right-4 bottom-3">
                     {/* Upload Button */}
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                      disabled={isGenerating}
-                      title="Attach files"
-                    >
-                      <Paperclip size={20} className="text-gray-600" />
-                    </button>
-                    
+
                     {/* Submit Button */}
                     <button
                       onClick={generateGraph}
                       disabled={isGenerating || (!inputText.trim() && uploadedFiles.length === 0)}
-                      className="p-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      className="flex items-center justify-center p-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                       title="Generate graph"
                     >
                       {isGenerating ? (
-                        <Loader2 size={20} className="animate-spin" />
+                        <Loader2 size={16} className="animate-spin" />
                       ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M5 12h14M12 5l7 7-7 7"/>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M12 19V5M5 12l7-7 7 7"/>
                         </svg>
                       )}
                     </button>
