@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, FileText, Download, Loader2, X, Paperclip } from 'lucide-react';
 
 // TODO - update to backend URL
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function App() {
   const [inputText, setInputText] = useState('');
