@@ -6,18 +6,29 @@ from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
-def get_llm(temperature=0, model_name=None, api_key=None):
+def get_llm(temperature=0, model_name=None, api_base=None, api_key=None):
     """
     Returns an LLM instance
     """
 
-    lm_api_base = "http://localhost:1234/v1"
+
+
+    LLM_MODEL_NAME="gemini-2.0-flash"
+    LM_STUDIO_API_BASE="https://generativelanguage.googleapis.com/v1beta"
+    OPENAI_API_KEY="AIzaSyBDectKJ04QzSIB9MM5LfjganhHGtTz8oM"
 
         # openai_api_base=lm_studio_api_base,
     llm_instance = ChatOpenAI(
-            api_base=lm_api_base,
-            openai_api_key=api_key,
-            model_name=model_name,
+            base_url=api_base,
+            api_key=api_key,
+            model=model_name,
+            temperature=temperature
+    )
+
+    llm_instance = ChatOpenAI(
+            base_url="https://generativelanguage.googleapis.com/v1beta",
+            api_key="AIzaSyBDectKJ04QzSIB9MM5LfjganhHGtTz8oM",
+            model="gemini-2.0-flash",
             temperature=temperature
     )
 

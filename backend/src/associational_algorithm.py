@@ -1,5 +1,4 @@
 # knowledge_graph_project/src/associational_algorithm.py
-
 import asyncio
 import json
 import logging
@@ -7,10 +6,10 @@ import re
 import traceback
 from typing import Dict, List, Any, Tuple
 
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.chat_models import ChatOpenAI
 from langchain_community.graphs.graph_document import GraphDocument, Node, Relationship
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from json_repair import repair_json
 import tiktoken
@@ -35,6 +34,7 @@ class AssociationalOntologyCreator:
                 chunk_size: int = 4000,
                 chunk_overlap: int = 200,
                 llm_name=None,
+                api_base=None,
                 api_key=None):
         """
         Initializes the ontology creator with a specific LLM and chunking strategy.
@@ -43,10 +43,11 @@ class AssociationalOntologyCreator:
             chunk_size (int): The size of the chunks for text splitting.
             chunk_overlap (int): The overlap between chunks.
         """
-        
+
         self.llm_name = llm_name
+        self.api_base = api_base
         self.api_key = api_key
-        self.llm = get_llm(temperature=0.0, model_name=self.llm_name, api_key=self.api_key)
+        self.llm = get_llm(temperature=0.0, model_name=self.llm_name, api_base=self.api_base, api_key=self.api_key)
         
         # Use a text splitter that respects token limits
         self.text_splitter = RecursiveCharacterTextSplitter(
