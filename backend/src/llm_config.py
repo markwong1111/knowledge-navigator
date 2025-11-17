@@ -10,12 +10,13 @@ def get_llm(temperature=0, model_name=None, api_base=None, api_key=None):
     """
     Returns an LLM instance
     """
-
-
-
-    LLM_MODEL_NAME="gemini-2.0-flash"
-    LM_STUDIO_API_BASE="https://generativelanguage.googleapis.com/v1beta"
     OPENAI_API_KEY="AIzaSyBDectKJ04QzSIB9MM5LfjganhHGtTz8oM"
+
+    LLM_MODEL_NAME = model_name if model_name else os.getenv("LLM_MODEL_NAME")
+    LM_STUDIO_API_BASE = api_base if api_base else os.getenv("LM_STUDIO_API_BASE")
+    OPENAI_API_KEY = api_key if api_key else os.getenv("OPENAI_API_KEY")
+
+
 
         # openai_api_base=lm_studio_api_base,
     llm_instance = ChatOpenAI(
