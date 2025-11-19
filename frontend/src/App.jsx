@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
-import { Upload, FileText, Download, Loader2, X, Paperclip } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Upload, FileText, Download, Loader2, X, Paperclip, Settings } from 'lucide-react';
+import SettingsMenu from './components/SettingsMenu';
 
 // TODO - update to backend URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -11,7 +12,18 @@ function App() {
   const [graphHtml, setGraphHtml] = useState(null);
   const [graphData, setGraphData] = useState(null);
   const [error, setError] = useState(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Initialize theme on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
 
   // Handle file selection
   const handleFileSelect = (e) => {
@@ -111,23 +123,23 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
       {graphHtml ? (
         // Graph Display View
         <div className="flex-1 flex flex-col">
-          <div className="bg-white border-b px-6 py-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-800">Knowledge Graph</h2>
+          <div className="bg-white dark:bg-gray-900 border-b dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Knowledge Graph</h2>
             <div className="flex gap-2">
               <button
                 onClick={() => downloadGraph('html')}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-sm font-medium"
               >
                 <Download size={16} />
                 HTML
               </button>
               <button
                 onClick={() => downloadGraph('json')}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-sm font-medium"
               >
                 <Download size={16} />
                 JSON
@@ -140,10 +152,16 @@ function App() {
                   setUploadedFiles([]);
                   setError(null);
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-sm font-medium"
               >
                 <X size={16} />
                 New Graph
+              </button>
+              <button
+                onClick={() => setSettingsOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-sm font-medium"
+              >
+                <Settings size={16} />
               </button>
             </div>
           </div>
@@ -159,8 +177,15 @@ function App() {
         // Input View
         <div className="flex-1 flex flex-col">
           {/* Header */}
-          <div className="px-4 py-3 border-b">
-            <h1 className="text-lg font-semibold text-gray-800">Knowledge Navigator</h1>
+          <div className="px-4 py-3 border-b dark:border-gray-700 flex items-center justify-between">
+            <h1 className="text-lg font-semibold text-gray-800 dark:text-white">Knowledge Navigator</h1>
+            <button
+              onClick={() => setSettingsOpen(true)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              title="Settings"
+            >
+              <Settings size={20} className="text-gray-600 dark:text-gray-400" />
+            </button>
           </div>
 
           {/* Main Content */}
@@ -169,10 +194,11 @@ function App() {
               {/* Welcome Message */}
               {!inputText && uploadedFiles.length === 0 && (
                 <div className="text-center mb-8">
-                  <h2 className="text-3xl font-semibold text-gray-800 mb-3">
+                  <img src="https://ideaspaces.net/wp-content/uploads/2024/06/cropped-ISbluelogocircleSM-1-1.png" alt="Logo" className="h-48 w-48 inline-block mr-2" />
+                  <h2 className="text-3xl font-semibold text-gray-800 dark:text-white mb-3">
                     Knowledge Navigator
                   </h2>
-                  <p className="text-gray-500">
+                  <p className="text-gray-500 dark:text-gray-400">
                     Upload documents or enter text to generate a knowledge graph
                   </p>
                 </div>
@@ -184,12 +210,12 @@ function App() {
                   {uploadedFiles.map((file, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between bg-gray-50 border border-gray-200 px-4 py-3 rounded-lg"
+                      className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-lg"
                     >
                       <div className="flex items-center gap-3">
-                        <FileText size={18} className="text-gray-600" />
-                        <span className="text-sm text-gray-700">{file.name}</span>
-                        <span className="text-xs text-gray-500">
+                        <FileText size={18} className="text-gray-600 dark:text-gray-400" />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{file.name}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           ({(file.size / 1024).toFixed(1)} KB)
                         </span>
                       </div>
@@ -220,7 +246,7 @@ function App() {
                     onKeyDown={handleKeyDown}
                     placeholder="Enter text or upload documents..."
                     rows={1}
-                    className="flex-1 p-4 pr-24 resize-none focus:outline-none text-gray-800 bg-gray-100 rounded-2xl max-h-64 overflow-y-auto shadow-sm hover:shadow-md transition-shadow"
+                    className="flex-1 p-4 pr-24 resize-none focus:outline-none text-gray-800 dark:text-white bg-gray-100 dark:bg-gray-800 rounded-2xl max-h-64 overflow-y-auto shadow-sm hover:shadow-md transition-shadow"
                     style={{ minHeight: '56px' }}
                     disabled={isGenerating}
                   /> 
@@ -255,7 +281,7 @@ function App() {
                 </div>
                 
                 {/* Help Text */}
-                <div className="mt-2 text-center text-xs text-gray-500">
+                <div className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
                   Press Enter to submit, Shift + Enter for new line • Supports TXT, PDF, DOCX, CSV
                 </div>
               </div>
@@ -263,6 +289,8 @@ function App() {
           </div>
         </div>
       )}
+
+      <SettingsMenu isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }
