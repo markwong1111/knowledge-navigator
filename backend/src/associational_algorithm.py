@@ -79,6 +79,7 @@ class AssociationalOntologyCreator:
              "Do not add any additional text, markdown, or explanations."
              "The JSON object must have two keys: 'nodes' and 'relationships'."
              "Each node must have an 'id' and a 'type'."
+             "ids should be unique identifiers based on the content. Do not label the node ids as 'Node 1', 'Node 2', etc.—use meaningful identifiers based on the content."
              "Each relationship must have a 'source' id, a 'target' id, and a 'type'."
              "Node types should be chosen from the following list: {node_types}."
              "Relationships should be verbs or short phrases that describe the connection, like 'WORKS_AT', 'IS_A', 'LOCATED_IN', 'MENTIONS', etc."),
