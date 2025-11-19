@@ -178,7 +178,13 @@ function App() {
         <div className="flex-1 flex flex-col">
           {/* Header */}
           <div className="px-4 py-3 border-b dark:border-gray-700 flex items-center justify-between">
-            <h1 className="text-lg font-semibold text-gray-800 dark:text-white">Knowledge Navigator</h1>
+            <div className="flex items-center gap-3">
+              <img 
+                src="https://ideaspaces.net/wp-content/uploads/2024/06/cropped-ISbluelogocircleSM-1-1.png" 
+                alt="Logo" 
+                className="h-8 w-8" 
+              />
+            </div>
             <button
               onClick={() => setSettingsOpen(true)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
@@ -194,7 +200,6 @@ function App() {
               {/* Welcome Message */}
               {!inputText && uploadedFiles.length === 0 && (
                 <div className="text-center mb-8">
-                  <img src="https://ideaspaces.net/wp-content/uploads/2024/06/cropped-ISbluelogocircleSM-1-1.png" alt="Logo" className="h-48 w-48 inline-block mr-2" />
                   <h2 className="text-3xl font-semibold text-gray-800 dark:text-white mb-3">
                     Knowledge Navigator
                   </h2>
