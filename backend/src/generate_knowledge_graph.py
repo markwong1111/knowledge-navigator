@@ -141,54 +141,33 @@ def visualize_graph(graph_document: GraphDocument) -> str | None:
     custom_filter_js = """
 <script>
 (function(){
-  console.log("[CentroidDebug] Script injected.");
-
   let stabilizationFired = false;
-  let periodicViewLogger = null;
 
   document.addEventListener("DOMContentLoaded", function() {
-    console.log("[CentroidDebug] DOMContentLoaded fired.");
     const waitForNetwork = setInterval(() => {
       const netReady = (typeof network !== "undefined");
       const nodesReady = (typeof nodes !== "undefined");
       const edgesReady = (typeof edges !== "undefined");
-      console.log("[CentroidDebug] Polling network state:",
-        { netReady, nodesReady, edgesReady });
 
       if (netReady && nodesReady && edgesReady) {
         clearInterval(waitForNetwork);
-        console.log("[CentroidDebug] Network, nodes, edges available.");
 
-        // Start periodic view position logging every 5 seconds
-        if (!periodicViewLogger) {
-          periodicViewLogger = setInterval(() => {
-            try {
-              const vp = network.getViewPosition();
-              const sc = network.getScale();
-              console.log("[CentroidDebug] Periodic view position:", vp, "scale:", sc);
-            } catch(e) {
-              console.log("[CentroidDebug] Error in periodic view logger:", e);
-            }
-          }, 5000);
-        }
-
+        // Set initial view after stabilization
         network.once("stabilizationIterationsDone", () => {
           stabilizationFired = true;
-          console.log("[CentroidDebug] stabilizationIterationsDone event.");
-          computeAndCenterCentroid("stabilizationIterationsDone");
+          setInitialView();
         });
 
         network.on("stabilized", (params) => {
-          console.log("[CentroidDebug] stabilized event.", params);
           if (!stabilizationFired) {
-            computeAndCenterCentroid("stabilized-fallback");
+            setInitialView();
           }
         });
 
+        // Fallback in case stabilization events don't fire
         setTimeout(() => {
           if (!stabilizationFired) {
-            console.log("[CentroidDebug] Fallback timeout firing centroid compute.");
-            computeAndCenterCentroid("timeout-fallback");
+            setInitialView();
           }
         }, 3000);
 
@@ -197,56 +176,174 @@ def visualize_graph(graph_document: GraphDocument) -> str | None:
     }, 300);
   });
 
-  function computeAndCenterCentroid(triggerSource) {
-    console.log("[CentroidDebug] computeAndCenterCentroid called. Trigger:", triggerSource);
-    if (typeof network === "undefined" || typeof nodes === "undefined") {
-      console.log("[CentroidDebug] Aborting: network or nodes undefined.");
-      return;
-    }
-    const positions = network.getPositions();
-    const posKeys = Object.keys(positions);
-    console.log("[CentroidDebug] Positions keys count:", posKeys.length);
-    let sumX = 0, sumY = 0, count = 0;
-    posKeys.forEach(id => {
-      const nodeData = nodes.get(id);
-      if (!nodeData) {
-        console.log("[CentroidDebug] Node id missing in DataSet:", id);
-        return;
-      }
-      if (!nodeData.hidden) {
-        const p = positions[id];
-        if (!p) {
-          console.log("[CentroidDebug] Missing position for id:", id);
-          return;
-        }
-        sumX += p.x;
-        sumY += p.y;
-        count++;
-      }
-    });
-    console.log("[CentroidDebug] Visible node count for centroid:", count);
-    if (count === 0) {
-      console.log("[CentroidDebug] No visible nodes; skipping moveTo.");
-      return;
-    }
-    const centerX = sumX / count;
-    const centerY = sumY / count;
-    window.graphCentroid = { x: centerX, y: centerY };
-    console.log("[CentroidDebug] Computed centroid:", window.graphCentroid);
-    console.log("[CentroidDebug] Current view position:", network.getViewPosition(), "scale:", network.getScale());
+  function setInitialView() {
+    if (typeof network === "undefined") return;
+
+    // Set the initial view to coordinates (3036, 2620) with scale 0.50
     network.moveTo({
       position: { x: 3036, y: 2620 },
-      scale: .50,
+      scale: 0.50,
       animation: { duration: 800, easingFunction: "easeInOutQuad" }
     });
-    setTimeout(() => {
-      console.log("[CentroidDebug] New view position (post moveTo):", network.getViewPosition(), "scale:", network.getScale());
-    }, 900);
   }
 
   function initFilterMenu() {
-    console.log("[CentroidDebug] initFilterMenu called.");
-    // ...existing filter code...
+    let filters = [];
+    let filter = { item: 'node', property: '', value: [] };
+
+    document.getElementById('filterItem').addEventListener('change', function() {
+      filter.item = this.value;
+      rebuildPropertyOptions();
+    });
+
+    document.getElementById('filterProperty').addEventListener('change', function() {
+      filter.property = this.value;
+      const valueSelect = document.getElementById('filterValue');
+      valueSelect.innerHTML = '<option value="">Loading...</option>';
+
+      if (!filter.property) {
+        valueSelect.innerHTML = '<option value="">Select a property first</option>';
+        return;
+      }
+
+      const allItems = (filter.item === 'node') ? nodes.get() : edges.get();
+      const uniqueValues = new Set();
+      allItems.forEach(item => {
+        const val = item[filter.property];
+        if (val !== undefined && val !== null) uniqueValues.add(String(val));
+      });
+
+      const sortedValues = Array.from(uniqueValues).sort((a, b) => {
+        const numA = parseFloat(a), numB = parseFloat(b);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return a.localeCompare(b);
+      });
+
+      valueSelect.innerHTML = '';
+      sortedValues.forEach(value => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value;
+        valueSelect.appendChild(option);
+      });
+    });
+
+    function rebuildPropertyOptions() {
+      const propertySelect = document.getElementById('filterProperty');
+      propertySelect.innerHTML = '<option value="">Select Property</option>';
+      const sample = (filter.item === 'node') ? nodes.get()[0] : edges.get()[0];
+      if (!sample) return;
+      Object.keys(sample).forEach(key => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = key;
+        propertySelect.appendChild(opt);
+      });
+    }
+
+    window.addCurrentFilter = function() {
+      const valueSelect = document.getElementById('filterValue');
+      filter.value = Array.from(valueSelect.selectedOptions).map(opt => opt.value);
+      if (!filter.property || filter.value.length === 0) {
+        alert('Please select a property and at least one value.');
+        return;
+      }
+
+      filters.push({ item: filter.item, property: filter.property, value: [...filter.value] });
+      applyFilters();
+      renderActiveFilters();
+    }
+
+    function applyFilters() {
+      const allNodes = nodes.get({ returnType: "Object" });
+      const allEdges = edges.get({ returnType: "Object" });
+
+      let visibleNodes = new Set(Object.keys(allNodes));
+      let visibleEdges = new Set(Object.keys(allEdges));
+
+      filters.forEach(f => {
+        const passingNodes = new Set();
+        const passingEdges = new Set();
+
+        if (f.item === 'node') {
+          for (let id in allNodes) {
+            const val = allNodes[id][f.property];
+            if (val !== undefined && f.value.includes(String(val))) {
+              passingNodes.add(id);
+            }
+          }
+        } else if (f.item === 'edge') {
+          for (let id in allEdges) {
+            const val = allEdges[id][f.property];
+            if (val !== undefined && f.value.includes(String(val))) {
+              passingEdges.add(id);
+              passingNodes.add(allEdges[id].from);
+              passingNodes.add(allEdges[id].to);
+            }
+          }
+        }
+
+        visibleNodes = new Set([...visibleNodes].filter(id => passingNodes.has(id)));
+        visibleEdges = new Set([...visibleEdges].filter(id => passingEdges.has(id)));
+      });
+
+      const updateNodeArray = [];
+      for (let id in allNodes) {
+        allNodes[id].hidden = filters.length > 0 && !visibleNodes.has(id);
+        updateNodeArray.push(allNodes[id]);
+      }
+      nodes.update(updateNodeArray);
+
+      const updateEdgeArray = [];
+      for (let id in allEdges) {
+        const e = allEdges[id];
+        const bothVisible = visibleNodes.has(e.from) && visibleNodes.has(e.to);
+        const shouldShow =
+          filters.length === 0 ||
+          visibleEdges.has(id) ||
+          bothVisible;
+
+        updateEdgeArray.push({
+          ...e,
+          hidden: !shouldShow
+        });
+      }
+      edges.update(updateEdgeArray);
+    }
+
+    window.resetAllFilters = function() {
+      filters = [];
+      const allNodes = nodes.get({ returnType: "Object" });
+      const allEdges = edges.get({ returnType: "Object" });
+      const nodeUpdates = Object.values(allNodes).map(n => ({ ...n, hidden: false }));
+      const edgeUpdates = Object.values(allEdges).map(e => ({ ...e, hidden: false }));
+      nodes.update(nodeUpdates);
+      edges.update(edgeUpdates);
+      renderActiveFilters();
+    }
+
+    function renderActiveFilters() {
+      const container = document.getElementById('active-filters');
+      if (filters.length === 0) {
+        container.innerHTML = "<i>No active filters</i>";
+        return;
+      }
+
+      container.innerHTML = filters.map((f, i) =>
+        `<span style="color:white; background:#555; padding:3px 6px; border-radius:4px; margin-right:5px;">
+          ${f.item}.${f.property}: ${f.value.join(', ')}
+          <button onclick='removeFilter(${i})' style='margin-left:5px; background:red; color:white; border:none; border-radius:3px; cursor:pointer;'>×</button>
+        </span>`
+      ).join('');
+    }
+
+    window.removeFilter = function(index) {
+      filters.splice(index, 1);
+      applyFilters();
+      renderActiveFilters();
+    }
+
+    rebuildPropertyOptions();
   }
 })();
 </script>
