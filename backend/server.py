@@ -7,10 +7,6 @@ from app import generate_knowledge_graph_html_sync
 app = Flask(__name__)
 CORS(app)
 
-user_api_key = None
-user_base_url = None
-user_model_name = None
-
 @app.route('/howdyworld/', methods=['GET'])
 def howdy_horld():
     
@@ -30,37 +26,54 @@ def set_env_variables():
 
 @app.route('/generate-graph/', methods=['POST'])
 def run_algorithm():
-    if user_api_key == None or user_base_url == None or user_model_name == None:
-        return jsonify({"error": "Environment variables not set"}), 400
-    data = request.get_json()
+    api_key = request.form.get('api_key')
+    base_url = request.form.get('base_url')
+    model_name = request.form.get('model_name')
+    temperature = int(request.form.get('temperature'))
+    chunk_size = int(request.form.get('chunk_size'))
+    chunk_overlap = int(request.form.get('chunk_overlap'))
+    
+    
+    # Validate credentials are provided
+    if not api_key or not base_url or not model_name:
+        return jsonify({
+            "error": "API credentials required. Please configure your API settings."
+        }), 400
 
-# what it takes in 
-#     files = [
-#     {
-#         'name': 'my_document.pdf',           # the filename
-#         'content': 'base64 data',   # The actual file content (encoded in base64)
-#         'extension': '.pdf'                  # File type (.txt, .pdf, .csv, .docx)
-#     },
-#     {
-#         'name': 'notes.txt',
-#         'content': 'This is text content',
-#         'extension': '.txt'
-#     }
-# ]
-    files = data.get("files", [])
-
+    # Get text from form data
+    text = request.form.get('text', '')
+    
+    # Get uploaded files
+    uploaded_files = request.files.getlist('files')
+    
     processed_files = []
-
-    for f in files:
-        decoded_content = base64.b64decode(f["content"])
+    
+    # Process uploaded files
+    for file in uploaded_files:
+        extension = '.' + file.filename.split('.')[-1].lower()
+        # Read file content into BytesIO
+        file_content = io.BytesIO(file.read())
         processed_files.append({
-            "name": f["name"],
-            "extension": f["extension"],
-            "content": io.BytesIO(decoded_content),  # <-- now real bytes
+            "name": file.filename,
+            "extension": extension,
+            "content": file_content,
         })
+    
+    # If text was provided, add it as a text file
+    if text.strip():
+        text_content = io.BytesIO(text.encode('utf-8'))
+        processed_files.append({
+            "name": "input_text.txt",
+            "extension": ".txt",
+            "content": text_content,
+        })
+    
+    if not processed_files:
+        return jsonify({"error": "No files or text provided"}), 400
+    
+    html = generate_knowledge_graph_html_sync(processed_files, api_key=api_key, api_base=base_url, llm_name=model_name, temp=temperature, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    return jsonify({"html": html})
 
-    html = generate_knowledge_graph_html_sync(processed_files) #need to make sure data is the right type to pass in
-    return {"html": html}
 
 encoded_string = None
 with open("paper1.pdf", "rb") as pdf_file:
@@ -86,7 +99,7 @@ processed_files = [
 
 @app.route('/generate/', methods=['GET'])
 def generate():
-    html = generate_knowledge_graph_html_sync(processed_files)
+    html = generate_knowledge_graph_html_sync(processed_files, user_api_key, user_base_url, user_model_name)
     with open("output.html", "w", encoding="utf-8") as f:
         f.write(html)
     return "done"

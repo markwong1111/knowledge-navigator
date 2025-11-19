@@ -31,11 +31,12 @@ class AssociationalOntologyCreator:
     """
 
     def __init__(self,
-                chunk_size: int = 4000,
-                chunk_overlap: int = 200,
+                chunk_size=4000,
+                chunk_overlap=200,
                 llm_name=None,
                 api_base=None,
-                api_key=None):
+                api_key=None,
+                temperature=0):
         """
         Initializes the ontology creator with a specific LLM and chunking strategy.
 
@@ -47,12 +48,14 @@ class AssociationalOntologyCreator:
         self.llm_name = llm_name
         self.api_base = api_base
         self.api_key = api_key
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+        self.temperature = temperature
         self.llm = get_llm(temperature=0.0, model_name=self.llm_name, api_base=self.api_base, api_key=self.api_key)
-        
         # Use a text splitter that respects token limits
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
+            chunk_size=self.chunk_size,
+            chunk_overlap=self.chunk_overlap,
             length_function=self._tiktoken_len
         )
 

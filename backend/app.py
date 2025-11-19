@@ -10,7 +10,13 @@ from src.generate_knowledge_graph import visualize_graph
 
 async def generate_knowledge_graph_html(
     files: Optional[List[Dict[str, Union[str, bytes]]]] = None,
-    raw_text: Optional[str] = None
+    raw_text: Optional[str] = None,
+    api_key: Optional[str] = None,
+    api_base: Optional[str] = None,
+    llm_name: Optional[str] = None,
+    temp: Optional[int] = None,
+    chunk_size: Optional[int] = None,
+    chunk_overlap: Optional[int] = None
 ) -> Optional[str]:
     """
     Generate a knowledge graph HTML from uploaded files or raw text.
@@ -80,7 +86,7 @@ async def generate_knowledge_graph_html(
     
     # Step 2: Generate the knowledge graph
     try:
-        creator = AssociationalOntologyCreator(llm_name="", api_key="") #this is where we would pass in the AI connection info
+        creator = AssociationalOntologyCreator(llm_name=llm_name, api_base=api_base, api_key=api_key, temperature=temp, chunk_size=chunk_size, chunk_overlap=chunk_overlap) #this is where we would pass in the AI connection info
         graph_document = await creator.create_associational_ontology(full_text)
         
         # Validate graph document
@@ -101,7 +107,13 @@ async def generate_knowledge_graph_html(
 
 def generate_knowledge_graph_html_sync(
     files: Optional[List[Dict[str, Union[str, bytes]]]] = None,
-    raw_text: Optional[str] = None
+    raw_text: Optional[str] = None,
+    api_key: Optional[str] = None,
+    api_base: Optional[str] = None,
+    llm_name: Optional[str] = None,
+    temp: Optional[int] = None,
+    chunk_size: Optional[int] = None,
+    chunk_overlap: Optional[int] = None
 ) -> Optional[str]:
     """
     Synchronous wrapper for generate_knowledge_graph_html.
@@ -113,7 +125,7 @@ def generate_knowledge_graph_html_sync(
     Returns:
         HTML string (or None if error)
     """
-    return asyncio.run(generate_knowledge_graph_html(files, raw_text))
+    return asyncio.run(generate_knowledge_graph_html(files, api_key=api_key, api_base=api_base, llm_name=llm_name, temp=temp, chunk_size=chunk_size, chunk_overlap=chunk_overlap))
 
 
 # Example usage:
