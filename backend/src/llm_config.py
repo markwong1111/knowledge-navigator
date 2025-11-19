@@ -10,7 +10,6 @@ def get_llm(temperature=0, model_name=None, api_base=None, api_key=None):
     """
     Returns an LLM instance
     """
-
         # openai_api_base=lm_studio_api_base,
     llm_instance = ChatOpenAI(
             base_url=api_base,

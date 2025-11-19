@@ -52,7 +52,16 @@ function App() {
 
     try {
       const formData = new FormData();
+
+      // Add API credentials to form data
+      formData.append('api_key', "");
+      formData.append('base_url', "");
+      formData.append('model_name', "");
+      formData.append('temperature', "0");
+      formData.append('chunk_size', "4000");
+      formData.append('chunk_overlap', "200");
       
+
       // Add text if present
       if (inputText.trim()) {
         formData.append('text', inputText);
@@ -64,7 +73,7 @@ function App() {
       });
 
       // Call your Python backend API
-      const response = await fetch(`${API_BASE_URL}/api/generate-graph`, {
+      const response = await fetch(`${API_BASE_URL}/generate-graph/`, {
         method: 'POST',
         body: formData,
       });
