@@ -80,7 +80,7 @@ with open("paper1.pdf", "rb") as pdf_file:
     encoded_string = base64.b64encode(pdf_file.read()).decode("utf-8")
 
 text_bytes = None
-with open("lore.txt", "rb") as txt_file:  # Changed to "rb"
+with open("lore.txt", "rb") as txt_file:
     text_bytes = txt_file.read()
 
 decoded_content = base64.b64decode(encoded_string)

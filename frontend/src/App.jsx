@@ -206,15 +206,12 @@ function App() {
           {/* Main Content */}
           <div className="flex-1 flex items-center justify-center p-4">
             <div className="w-full max-w-3xl">
-              {/* Welcome Message */}
-              {!inputText && uploadedFiles.length === 0 && (
-                <div className="text-center mb-8">
+              {/* Welcome Message - Hidden if error or files uploaded */}
+              {!error && uploadedFiles.length === 0 && (
+                <div className="text-center mb-12">
                   <h2 className="text-3xl font-semibold text-gray-800 dark:text-white mb-3">
                     Knowledge Navigator
                   </h2>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    Upload documents or enter text to generate a knowledge graph
-                  </p>
                 </div>
               )}
 
@@ -227,7 +224,6 @@ function App() {
                       className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-lg"
                     >
                       <div className="flex items-center gap-3">
-                        <FileText size={18} className="text-gray-600 dark:text-gray-400" />
                         <span className="text-sm text-gray-700 dark:text-gray-300">{file.name}</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
                           ({(file.size / 1024).toFixed(1)} KB)
@@ -258,16 +254,39 @@ function App() {
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Enter text or upload documents..."
-                    rows={1}
-                    className="flex-1 p-4 pr-24 resize-none focus:outline-none text-gray-800 dark:text-white bg-gray-100 dark:bg-gray-800 rounded-2xl max-h-64 overflow-y-auto shadow-sm hover:shadow-md transition-shadow"
-                    style={{ minHeight: '56px' }}
+                    placeholder="Enter text to generate graph..."
+                    rows={Math.max(2, Math.min((inputText.split('\n').length || 0) + 1, 5))}
+                    className="flex-1 resize-none focus:outline-none text-gray-800 dark:text-white bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-y-auto shadow-sm hover:shadow-md transition-shadow custom-scrollbar"
+                    style={{ 
+                      minHeight: '88px', 
+                      maxHeight: '200px', 
+                      paddingTop: '16px',
+                      paddingLeft: '16px',
+                      paddingRight: '56px',
+                      paddingBottom: '60px',
+                    }}
                     disabled={isGenerating}
-                  /> 
-                  <div className="absolute right-4 bottom-3">
-                    {/* Upload Button */}
+                    ref={(el) => {
+                      if (el) el.scrollTop = el.scrollHeight;
+                    }}
+                  />
+                                                    
+                  {/* File Upload Button - Left side */}
+                  <div className="absolute left-4 bottom-3">
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isGenerating}
+                      className="flex items-center justify-center p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      title="Upload files"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 5v14M5 12h14"/>
+                      </svg>
+                    </button>
+                  </div>
 
-                    {/* Submit Button */}
+                  {/* Submit Button - Right side */}
+                  <div className="absolute right-4 bottom-3">
                     <button
                       onClick={generateGraph}
                       disabled={isGenerating || (!inputText.trim() && uploadedFiles.length === 0)}
@@ -305,6 +324,29 @@ function App() {
       )}
 
       <SettingsMenu isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+          margin-bottom: 60px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #d1d5db;
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #9ca3af;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #4b5563;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #6b7280;
+        }
+      `}</style>
     </div>
   );
 }
