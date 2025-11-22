@@ -15,6 +15,16 @@ function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const fileInputRef = useRef(null);
 
+  //settings variables
+  const [apiKey, setApiKey] = useState('')
+  const [baseURL, setBaseURL] = useState('')
+  const [modelName, setModelName] = useState('')
+  const [temp, setTemp] = useState('')
+
+  // change chunk overlap depending on chunk size
+  // overlap size should be roughly 1/20th of the chunks size
+  const [chunkSize, setChunkSize] = useState('') 
+
   // Initialize theme on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -54,12 +64,11 @@ function App() {
       const formData = new FormData();
 
       // Add API credentials to form data
-      formData.append('api_key', "");
-      formData.append('base_url', "");
-      formData.append('model_name', "");
-      formData.append('temperature', "0");
-      formData.append('chunk_size', "4000");
-      formData.append('chunk_overlap', "200");
+      formData.append('api_key', apiKey);
+      formData.append('base_url', baseURL);
+      formData.append('model_name', modelName);
+      formData.append('temperature', temp);
+      formData.append('chunk_size', chunkSize);
       
 
       // Add text if present
@@ -323,7 +332,34 @@ function App() {
         </div>
       )}
 
-      <SettingsMenu isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+         {/* //settings variables
+  const [apiKey, setApiKey] = useState('')
+  const [baseURL, setBaseURL] = useState('')
+  const [modelName, setModelName] = useState('')
+  const [temp, setTemp] = useState('')
+
+  // change chunk overlap depending on chunk size
+  // overlap size should be roughly 1/20th of the chunks size
+  const [chunkSize, setChunkSize] = useState('')  */}
+      <SettingsMenu
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+
+        apiKey={apiKey}
+        setApiKey={setApiKey}
+
+        baseURL={baseURL}
+        setBaseURL={setBaseURL}
+
+        modelName={modelName}
+        setModelName={setModelName}
+
+        temp={temp}
+        setTemp={setTemp}
+
+        chunkSize={chunkSize}
+        setChunkSize={setChunkSize} 
+      />
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
