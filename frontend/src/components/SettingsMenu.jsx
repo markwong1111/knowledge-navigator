@@ -1,29 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sun, Moon, Server, Sliders } from 'lucide-react';
 
-function SettingsMenu({ isOpen, onClose }) {
+function SettingsMenu({ isOpen, onClose, apiKey, setApiKey, baseURL, setBaseURL, modelName, setModelName, temp, setTemp, chunkSize, setChunkSize }) {
   const [theme, setTheme] = useState('light');
-  const [llmProvider, setLlmProvider] = useState('lmstudio');
-  const [llmApiBase, setLlmApiBase] = useState('http://localhost:1234/v1');
-  const [llmModel, setLlmModel] = useState('mistral-instruct-v0.2');
-  const [temperature, setTemperature] = useState(0);
-  const [maxTokens, setMaxTokens] = useState(2000);
-
+  
   // Load settings from localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'light';
-    const savedLlmProvider = localStorage.getItem('llmProvider') || 'lmstudio';
-    const savedLlmApiBase = localStorage.getItem('llmApiBase') || 'http://localhost:1234/v1';
-    const savedLlmModel = localStorage.getItem('llmModel') || 'mistral-instruct-v0.2';
-    const savedTemperature = localStorage.getItem('temperature') || '0';
-    const savedMaxTokens = localStorage.getItem('maxTokens') || '2000';
+    setApiKey(localStorage.getItem('apiKey') || '');
+    setBaseURL(localStorage.getItem('llmApiBase') || '');
+    setModelName(localStorage.getItem('llmModel') || '');
+    setTemp(localStorage.getItem('temperature') || '0');
+    setChunkSize(localStorage.getItem('maxTokens') || '4000');
 
     setTheme(savedTheme);
-    setLlmProvider(savedLlmProvider);
-    setLlmApiBase(savedLlmApiBase);
-    setLlmModel(savedLlmModel);
-    setTemperature(parseFloat(savedTemperature));
-    setMaxTokens(parseInt(savedMaxTokens));
 
     // Apply theme
     if (savedTheme === 'dark') {
@@ -46,11 +36,11 @@ function SettingsMenu({ isOpen, onClose }) {
   };
 
   const handleSave = () => {
-    localStorage.setItem('llmProvider', llmProvider);
-    localStorage.setItem('llmApiBase', llmApiBase);
-    localStorage.setItem('llmModel', llmModel);
-    localStorage.setItem('temperature', temperature.toString());
-    localStorage.setItem('maxTokens', maxTokens.toString());
+    localStorage.setItem('apiKey', apiKey);
+    localStorage.setItem('llmApiBase', baseURL);
+    localStorage.setItem('llmModel', modelName);
+    localStorage.setItem('temperature', temp);
+    localStorage.setItem('maxTokens', chunkSize);
     onClose();
   };
 
@@ -112,17 +102,15 @@ function SettingsMenu({ isOpen, onClose }) {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Provider
+                  Model Name
                 </label>
-                <select
-                  value={llmProvider}
-                  onChange={(e) => setLlmProvider(e.target.value)}
+                <input
+                  type="text"
+                  value={modelName}
+                  onChange={(e) => setModelName(e.target.value)}
+                  placeholder="mistral-instruct-v0.2"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="lmstudio">LM Studio (OpenAI Compatible)</option>
-                  <option value="openai">OpenAI</option>
-                  <option value="ollama">Ollama</option>
-                </select>
+                />
               </div>
 
               <div>
@@ -131,8 +119,8 @@ function SettingsMenu({ isOpen, onClose }) {
                 </label>
                 <input
                   type="text"
-                  value={llmApiBase}
-                  onChange={(e) => setLlmApiBase(e.target.value)}
+                  value={baseURL}
+                  onChange={(e) => setBaseURL(e.target.value)}
                   placeholder="http://localhost:1234/v1"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
@@ -140,13 +128,13 @@ function SettingsMenu({ isOpen, onClose }) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Model Name
+                  API Key
                 </label>
                 <input
                   type="text"
-                  value={llmModel}
-                  onChange={(e) => setLlmModel(e.target.value)}
-                  placeholder="mistral-instruct-v0.2"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="AIzaSyBDec..."
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -163,15 +151,15 @@ function SettingsMenu({ isOpen, onClose }) {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Temperature: {temperature}
+                  Temperature: {temp}
                 </label>
                 <input
                   type="range"
                   min="0"
                   max="2"
                   step="0.1"
-                  value={temperature}
-                  onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                  value={temp}
+                  onChange={(e) => setTemp(e.target.value)}
                   className="w-full"
                 />
                 <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -186,8 +174,8 @@ function SettingsMenu({ isOpen, onClose }) {
                 </label>
                 <input
                   type="number"
-                  value={maxTokens}
-                  onChange={(e) => setMaxTokens(parseInt(e.target.value))}
+                  value={chunkSize}
+                  onChange={(e) => setChunkSize(e.target.value)}
                   min="100"
                   max="8000"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"

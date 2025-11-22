@@ -29,9 +29,10 @@ def run_algorithm():
     api_key = request.form.get('api_key')
     base_url = request.form.get('base_url')
     model_name = request.form.get('model_name')
-    temperature = int(request.form.get('temperature'))
+    temperature = float(request.form.get('temperature'))
     chunk_size = int(request.form.get('chunk_size'))
-    chunk_overlap = int(request.form.get('chunk_overlap'))
+
+    chunk_overlap = chunk_size // 20
     
     
     # Validate credentials are provided
