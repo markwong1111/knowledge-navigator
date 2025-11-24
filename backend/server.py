@@ -7,7 +7,7 @@ from app import generate_knowledge_graph_html_sync
 app = Flask(__name__)
 
 CORS(app, origins=[
-    "https://knowledge-navigator-seven.vercel.app/",
+    "https://knowledge-navigator-seven.vercel.app",
     "http://localhost:3000",
     "http://localhost:5173"
 ])

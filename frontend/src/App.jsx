@@ -3,7 +3,7 @@ import { Upload, FileText, Download, Loader2, X, Paperclip, Settings } from 'luc
 import SettingsMenu from './components/SettingsMenu';
 
 // TODO - update to backend URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 function App() {
   const [inputText, setInputText] = useState('');
