@@ -5,7 +5,12 @@ import io
 from app import generate_knowledge_graph_html_sync
 
 app = Flask(__name__)
-CORS(app)
+
+CORS(app, origins=[
+    "https://knowledge-navigator-seven.vercel.app/",
+    "http://localhost:3000",
+    "http://localhost:5173"
+])
 
 @app.route('/howdyworld/', methods=['GET'])
 def howdy_horld():
@@ -76,27 +81,27 @@ def run_algorithm():
     return jsonify({"html": html})
 
 
-encoded_string = None
-with open("paper1.pdf", "rb") as pdf_file:
-    encoded_string = base64.b64encode(pdf_file.read()).decode("utf-8")
+# encoded_string = None
+# with open("paper1.pdf", "rb") as pdf_file:
+#     encoded_string = base64.b64encode(pdf_file.read()).decode("utf-8")
 
-text_bytes = None
-with open("lore.txt", "rb") as txt_file:
-    text_bytes = txt_file.read()
+# text_bytes = None
+# with open("lore.txt", "rb") as txt_file:
+#     text_bytes = txt_file.read()
 
-decoded_content = base64.b64decode(encoded_string)
-processed_files = [
-    {
-        'name': 'paper1.pdf',
-        'content': io.BytesIO(decoded_content),
-        'extension': '.pdf'
-    },
-    {
-        'name': 'lore.txt',
-        'content': io.BytesIO(text_bytes),
-        'extension': '.txt'
-    }
-]
+# decoded_content = base64.b64decode(encoded_string)
+# processed_files = [
+#     {
+#         'name': 'paper1.pdf',
+#         'content': io.BytesIO(decoded_content),
+#         'extension': '.pdf'
+#     },
+#     {
+#         'name': 'lore.txt',
+#         'content': io.BytesIO(text_bytes),
+#         'extension': '.txt'
+#     }
+# ]
 
 @app.route('/generate/', methods=['GET'])
 def generate():
