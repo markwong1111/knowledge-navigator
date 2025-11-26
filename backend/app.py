@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Dict, Union, Optional
 import pandas as pd
 
+# NOTE: Assuming these imports are correct and available
 from src.file_reader import read_text_file, read_csv_file, read_pdf_file, read_doc_file
 from src.associational_algorithm import AssociationalOntologyCreator
 from src.generate_knowledge_graph import visualize_graph
@@ -31,26 +32,29 @@ async def generate_knowledge_graph_html(
     Returns:
         - HTML string of the knowledge graph (or None if error)
     """
-    # result = {
-    #     'html': None,
-    #     'graph_data': None,
-    #     'error': None,
-    #     'processed_text': None
-    # }
     
     # Step 1: Read and process document content
     full_text = []
     
     if raw_text:
+        # Note: If raw_text is provided, it bypasses the 'files' list handling 
+        # and is processed first in the 'full_text' list.
         full_text.append({"name": "raw_text", "content": raw_text})
     
     if files:
         for file_dict in files:
             file_name = file_dict.get('name', 'unknown')
-            file_content = file_dict.get('content')
+            file_content = file_dict.get('content') # This is the io.BytesIO object from server.py
             file_extension = file_dict.get('extension', Path(file_name).suffix).lower()
             
             try:
+                # 💡 CRITICAL FIX: Reset stream position to 0 before reading.
+                # This ensures the file content is read from the beginning, 
+                # especially important if the stream pointer was moved by Flask 
+                # or a previous operation.
+                if file_content is not None and hasattr(file_content, 'seek'):
+                    file_content.seek(0)
+                
                 if file_extension == ".txt":
                     text_content = read_text_file(file_content)
                     full_text.append({"name": file_name, "content": text_content})
@@ -58,7 +62,8 @@ async def generate_knowledge_graph_html(
                 elif file_extension == ".csv":
                     df = read_csv_file(file_content)
                     if df is not None:
-                        full_text.append({"name": file_name, "content": df})
+                        # Assuming 'read_csv_file' returns a pandas DataFrame
+                        full_text.append({"name": file_name, "content": df}) 
                         
                 elif file_extension == ".pdf":
                     pdf_content = read_pdf_file(file_content)
@@ -69,24 +74,26 @@ async def generate_knowledge_graph_html(
                     full_text.append({"name": file_name, "content": doc_content})
                     
                 else:
-                    # result['error'] = f"Unsupported file type: {file_name}"
-                    # return result
-                    return None
+                    return None # Unsupported file type
                     
             except Exception as e:
-                # result['error'] = f"Error reading file {file_name}: {str(e)}"
-                # return result
-                return None
+                # print(f"Error reading file {file_name}: {str(e)}") # Optional: For debugging
+                return None # Error reading the file
     
     # Check if we have any content to process
     if not full_text:
-        # result['error'] = "No content provided. Please provide files or raw text."
-        # return result
         return None
     
     # Step 2: Generate the knowledge graph
     try:
-        creator = AssociationalOntologyCreator(llm_name=llm_name, api_base=api_base, api_key=api_key, temperature=temp, chunk_size=chunk_size, chunk_overlap=chunk_overlap) #this is where we would pass in the AI connection info
+        creator = AssociationalOntologyCreator(
+            llm_name=llm_name, 
+            api_base=api_base, 
+            api_key=api_key, 
+            temperature=temp, 
+            chunk_size=chunk_size, 
+            chunk_overlap=chunk_overlap
+        )
         graph_document = await creator.create_associational_ontology(full_text)
         
         # Validate graph document
@@ -94,17 +101,13 @@ async def generate_knowledge_graph_html(
             html_output = visualize_graph(graph_document)
             return html_output
         else:
-            # result['error'] = "Graph generation failed: No valid nodes or relationships were extracted from the text."
-            return None
-
+            return None # Graph generation failed
             
     except Exception as e:
-        # result['error'] = f"An error occurred during graph generation: {str(e)}"
+        # print(f"An error occurred during graph generation: {str(e)}") # Optional: For debugging
         return None
     
-    # return result['html']
-
-
+# --- Synchronous Wrapper ---
 def generate_knowledge_graph_html_sync(
     files: Optional[List[Dict[str, Union[str, bytes]]]] = None,
     raw_text: Optional[str] = None,
@@ -125,13 +128,26 @@ def generate_knowledge_graph_html_sync(
     Returns:
         HTML string (or None if error)
     """
-    return asyncio.run(generate_knowledge_graph_html(files, api_key=api_key, api_base=api_base, llm_name=llm_name, temp=temp, chunk_size=chunk_size, chunk_overlap=chunk_overlap))
+    # Note: raw_text argument was missing in the original call here, 
+    # but it seems the POST request in server.py only uses the 'files' list 
+    # which includes the text input wrapped as a file. Keeping the call as intended 
+    # for the server.py structure.
+    return asyncio.run(generate_knowledge_graph_html(
+        files, 
+        api_key=api_key, 
+        api_base=api_base, 
+        llm_name=llm_name, 
+        temp=temp, 
+        chunk_size=chunk_size, 
+        chunk_overlap=chunk_overlap
+    ))
 
 
 # Example usage:
 if __name__ == "__main__":
     # Example 1: Process raw text
-    raw_text = """"""
+    raw_text = """Example text for graph generation."""
+    # Assuming the user has credentials defined or it's being tested without LLM
     html = generate_knowledge_graph_html_sync(raw_text=raw_text)
     
     if html:
@@ -141,19 +157,3 @@ if __name__ == "__main__":
             f.write(html)
     else:
         print("Error: Failed to generate HTML")
-    
-    # Example 2: Process files
-    # files = [
-    #     {
-    #         'name': 'document.txt',
-    #         'content': open('document.txt', 'rb'),
-    #         'extension': '.txt'
-    #     },
-    #     {
-    #         'name': 'data.pdf',
-    #         'content': open('data.pdf', 'rb'),
-    #         'extension': '.pdf'
-    #     }
-    # ]
-    # html = generate_knowledge_graph_html_sync(files=files)
-
