@@ -82,15 +82,15 @@ function App() {
       });
 
       // Call your Python backend API
-      const response = await fetch(`${API_BASE_URL}/generate-graph/`, {
-        method: 'POST',
-        body: formData,
+     const response = await fetch(`${API_BASE_URL}/generate-graph/`, {
+      method: 'POST',
+      body: formData,
       });
-
+      
       if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
+      throw new Error(`Server error: ${response.status}`);
       }
-
+      
       const data = await response.json();
       
       // Set graph HTML for display
