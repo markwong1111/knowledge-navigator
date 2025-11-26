@@ -31,54 +31,73 @@ def set_env_variables():
 
 @app.route('/generate-graph/', methods=['POST'])
 def run_algorithm():
-    api_key = request.form.get('api_key')
-    base_url = request.form.get('base_url')
-    model_name = request.form.get('model_name')
-    temperature = float(request.form.get('temperature'))
-    chunk_size = int(request.form.get('chunk_size'))
-
-    chunk_overlap = chunk_size // 20
-    
-    
-    # Validate credentials are provided
-    if not api_key or not base_url or not model_name:
-        return jsonify({
-            "error": "API credentials required. Please configure your API settings."
-        }), 400
-
-    # Get text from form data
-    text = request.form.get('text', '')
-    
-    # Get uploaded files
-    uploaded_files = request.files.getlist('files')
-    
-    processed_files = []
-    
-    # Process uploaded files
-    for file in uploaded_files:
-        extension = '.' + file.filename.split('.')[-1].lower()
-        # Read file content into BytesIO
-        file_content = io.BytesIO(file.read())
-        processed_files.append({
-            "name": file.filename,
-            "extension": extension,
-            "content": file_content,
-        })
-    
-    # If text was provided, add it as a text file
-    if text.strip():
-        text_content = io.BytesIO(text.encode('utf-8'))
-        processed_files.append({
-            "name": "input_text.txt",
-            "extension": ".txt",
-            "content": text_content,
-        })
-    
-    if not processed_files:
-        return jsonify({"error": "No files or text provided"}), 400
-    
-    html = generate_knowledge_graph_html_sync(processed_files, api_key=api_key, api_base=base_url, llm_name=model_name, temp=temperature, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-    return jsonify({"html": html})
+    try:
+        api_key = request.form.get('api_key')
+        base_url = request.form.get('base_url')
+        model_name = request.form.get('model_name')
+        
+        # Handle temperature with default value
+        temp_str = request.form.get('temperature', '0.7')
+        temperature = float(temp_str) if temp_str else 0.7
+        
+        # Handle chunk_size with default value
+        chunk_str = request.form.get('chunk_size', '1000')
+        chunk_size = int(chunk_str) if chunk_str else 1000
+        
+        chunk_overlap = chunk_size // 20
+        
+        # Validate credentials are provided
+        if not api_key or not base_url or not model_name:
+            return jsonify({
+                "error": "API credentials required. Please configure your API settings."
+            }), 400
+        
+        # Get text from form data
+        text = request.form.get('text', '')
+        
+        # Get uploaded files
+        uploaded_files = request.files.getlist('files')
+        
+        processed_files = []
+        
+        # Process uploaded files
+        for file in uploaded_files:
+            extension = '.' + file.filename.split('.')[-1].lower()
+            # Read file content into BytesIO
+            file_content = io.BytesIO(file.read())
+            processed_files.append({
+                "name": file.filename,
+                "extension": extension,
+                "content": file_content,
+            })
+        
+        # If text was provided, add it as a text file
+        if text.strip():
+            text_content = io.BytesIO(text.encode('utf-8'))
+            processed_files.append({
+                "name": "input_text.txt",
+                "extension": ".txt",
+                "content": text_content,
+            })
+        
+        if not processed_files:
+            return jsonify({"error": "No files or text provided"}), 400
+        
+        html = generate_knowledge_graph_html_sync(
+            processed_files, 
+            api_key=api_key, 
+            api_base=base_url, 
+            llm_name=model_name, 
+            temp=temperature, 
+            chunk_size=chunk_size, 
+            chunk_overlap=chunk_overlap
+        )
+        return jsonify({"html": html})
+        
+    except ValueError as e:
+        return jsonify({"error": f"Invalid settings value: {str(e)}"}), 400
+    except Exception as e:
+        return jsonify({"error": f"Error generating graph: {str(e)}"}), 500
 
 
 # encoded_string = None
