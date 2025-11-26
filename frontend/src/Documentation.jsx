@@ -1,7 +1,8 @@
 import React from 'react';
-import { Book, ArrowLeft, Info, FileText, Code } from 'lucide-react'; // Added missing icons
-import SettingsMenu from './components/SettingsMenu'; // Retained, assuming it's used elsewhere
-import {Link} from 'react-router-dom'
+import { Book, ArrowLeft, Info, FileText, Code } from 'lucide-react';
+import SettingsMenu from './components/SettingsMenu';
+import { Link } from 'react-router-dom';
+
 const Documentation = ({ onNavigate }) => {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 overflow-y-auto h-full">
@@ -9,7 +10,6 @@ const Documentation = ({ onNavigate }) => {
       <header className="border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* Using Book icon */}
             <Book className="text-blue-600 dark:text-blue-400" size={24} />
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               Knowledge Navigator Docs
@@ -19,7 +19,6 @@ const Documentation = ({ onNavigate }) => {
             to="/"
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
           >
-            {/* Using ArrowLeft icon */}
             <ArrowLeft size={16} />
             Back to App
           </Link>
@@ -51,7 +50,6 @@ const Documentation = ({ onNavigate }) => {
             {/* Section: Getting Started */}
             <section id="getting-started" className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b dark:border-gray-700">
-                {/* Using Info icon */}
                 <Info className="text-blue-500" size={20} />
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Getting Started</h2>
               </div>
@@ -70,7 +68,6 @@ const Documentation = ({ onNavigate }) => {
             {/* Section: Uploading */}
             <section id="uploading" className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b dark:border-gray-700">
-                {/* Using FileText icon */}
                 <FileText className="text-green-500" size={20} />
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Supported Formats</h2>
               </div>
@@ -90,7 +87,6 @@ const Documentation = ({ onNavigate }) => {
             {/* Section: API Config */}
             <section id="api-config" className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b dark:border-gray-700">
-                {/* Using Code icon */}
                 <Code className="text-purple-500" size={20} />
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Configuration</h2>
               </div>
@@ -125,92 +121,112 @@ const Documentation = ({ onNavigate }) => {
                   </tbody>
                 </table>
               </div>
+
               <p className="text-gray-600 dark:text-gray-300">
-              You can customize the generation process via the Settings menu.
+                You can customize the generation process via the Settings menu.
               </p>
-  
+
               <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-6">
-  
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  How to Get an API Key and Base URL (Easy Guide)
-              </h3>
-  
-              <p className="text-gray-700 dark:text-gray-300">
-                  To use AI models, you need two things:
-              </p>
-  
-              <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 ml-4">
-                  <li><strong>An API Key</strong> — this is like a secret password.</li>
-                  <li><strong>A Base URL</strong> — this tells the app which website to talk to.</li>
-              </ul>
-  
-              <p className="text-gray-700 dark:text-gray-300">
-                  Below are the super simple steps for getting these from Google Gemini and OpenAI.
-              </p>
-  
-              {/* GOOGLE GEMINI */}
-              <div className="p-3 rounded-md bg-blue-50 dark:bg-blue-900/20">
+
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  How to Get an API Key, Base URL, and Model Name (Easy Guide)
+                </h3>
+
+                <p className="text-gray-700 dark:text-gray-300">
+                  To use AI models, you need three things:
+                </p>
+
+                <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 ml-4">
+                  <li><strong>An API Key</strong> — this is a secret password.</li>
+                  <li><strong>A Base URL</strong> — this tells the app which website access.</li>
+                  <li><strong>A Model Name</strong> — this tells the app which AI to use.</li>
+                </ul>
+
+                <p className="text-gray-700 dark:text-gray-300">
+                  Below are super simple steps for getting these from Google Gemini and OpenAI.
+                </p>
+
+                {/* GOOGLE GEMINI */}
+                <div className="p-3 rounded-md bg-blue-50 dark:bg-blue-900/20">
                   <h4 className="font-semibold text-blue-700 dark:text-blue-300">Google Gemini</h4>
-  
+
                   <h5 className="font-semibold text-blue-600 dark:text-blue-400 mt-2">1. How to Get Your API Key</h5>
                   <ol className="list-decimal list-inside text-gray-700 dark:text-gray-300 space-y-1 mt-1">
-                  <li>Go to: <a href="https://aistudio.google.com" className="text-blue-600 underline" target="_blank" rel="noreferrer">aistudio.google.com</a></li>
-                  <li>Sign in with your Google account.</li>
-                  <li>On the left side, click <strong>API Keys</strong>.</li>
-                  <li>Click <strong>Create API Key</strong>.</li>
-                  <li>Copy the key — this is your Google Gemini API Key.</li>
+                    <li>Go to: <a href="https://aistudio.google.com" className="text-blue-600 underline" target="_blank" rel="noreferrer">aistudio.google.com</a></li>
+                    <li>Sign in with your Google account.</li>
+                    <li>On the left side, click <strong>API Keys</strong>.</li>
+                    <li>Click <strong>Create API Key</strong>.</li>
+                    <li>Copy the key — this is your Google Gemini API key.</li>
                   </ol>
-  
+
                   <h5 className="font-semibold text-blue-600 dark:text-blue-400 mt-4">2. How to Get Your Base URL</h5>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                  The base URL for Gemini is:
+                    The base URL for Gemini is:
                   </p>
                   <pre className="bg-white dark:bg-gray-900 text-sm p-2 rounded border border-gray-200 dark:border-gray-700 mt-1">
-              https://generativelanguage.googleapis.com/v1beta
+https://generativelanguage.googleapis.com/v1beta
                   </pre>
-  
+
                   <p className="text-gray-700 dark:text-gray-300 text-sm mt-2">
-                  Just copy that line and paste it into the "Base URL" box in Settings.
+                    Just copy that line and paste it into the "Base URL" box in Settings.
                   </p>
-              </div>
-  
-              {/* OPENAI */}
-              <div className="p-3 rounded-md bg-purple-50 dark:bg-purple-900/20">
+
+                  <h5 className="font-semibold text-blue-600 dark:text-blue-400 mt-4">3. How to Find Your Model Name</h5>
+                  <ol className="list-decimal list-inside text-gray-700 dark:text-gray-300 space-y-1 mt-1">
+                    <li>While still on <strong>AI Studio</strong>, click on <strong>Playground</strong> or start a new chat.</li>
+                    <li>At the top of the page, you will see a dropdown for the model.</li>
+                    <li>Click the dropdown and look at the model name, such as <code className="font-mono text-xs">gemini-1.5-flash</code> or <code className="font-mono text-xs">gemini-1.5-pro</code>.</li>
+                    <li>Copy that text exactly — that is your <strong>Model Name</strong>.</li>
+                  </ol>
+                  <p className="text-gray-700 dark:text-gray-300 text-sm mt-2">
+                    Paste this into the "Model Name" box in Settings when you want to use Gemini.
+                  </p>
+                </div>
+
+                {/* OPENAI */}
+                <div className="p-3 rounded-md bg-purple-50 dark:bg-purple-900/20">
                   <h4 className="font-semibold text-purple-700 dark:text-purple-300">OpenAI</h4>
-  
+
                   <h5 className="font-semibold text-purple-600 dark:text-purple-400 mt-2">1. How to Get Your API Key</h5>
                   <ol className="list-decimal list-inside text-gray-700 dark:text-gray-300 space-y-1 mt-1">
-                  <li>Go to: <a href="https://platform.openai.com" className="text-purple-600 underline" target="_blank" rel="noreferrer">platform.openai.com</a></li>
-                  <li>Log in or create a free account.</li>
-                  <li>Click <strong>Dashboard</strong> on the left.</li>
-                  <li>Click <strong>API Keys</strong>.</li>
-                  <li>Press <strong>Create new secret key</strong>.</li>
-                  <li>Copy the key — that is your OpenAI API Key.</li>
+                    <li>Go to: <a href="https://platform.openai.com" className="text-purple-600 underline" target="_blank" rel="noreferrer">platform.openai.com</a></li>
+                    <li>Log in or create a free account.</li>
+                    <li>Click <strong>Dashboard</strong> on the left.</li>
+                    <li>Click <strong>API Keys</strong>.</li>
+                    <li>Press <strong>Create new secret key</strong>.</li>
+                    <li>Copy the key — this is your OpenAI API key.</li>
                   </ol>
-  
+
                   <h5 className="font-semibold text-purple-600 dark:text-purple-400 mt-4">2. How to Get Your Base URL</h5>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                  The base URL for OpenAI is:
+                    The base URL for OpenAI is:
                   </p>
                   <pre className="bg-white dark:bg-gray-900 text-sm p-2 rounded border border-gray-200 dark:border-gray-700 mt-1">
-              https://api.openai.com/v1
+https://api.openai.com/v1
                   </pre>
-  
+
                   <p className="text-gray-700 dark:text-gray-300 text-sm mt-2">
-                  Copy this and paste it into the "Base URL" field in your Settings.
+                    Copy this and paste it into the "Base URL" field in your Settings.
                   </p>
-              </div>
-  
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Once you have the API Key and Base URL for the service you want to use, open the <strong>Settings</strong> menu inside the app and paste them in.
-              </p>
-  
-              </div>
 
-              
+                  <h5 className="font-semibold text-purple-600 dark:text-purple-400 mt-4">3. How to Find Your Model Name</h5>
+                  <ol className="list-decimal list-inside text-gray-700 dark:text-gray-300 space-y-1 mt-1">
+                    <li>In the OpenAI website, click on <strong>Playground</strong>.</li>
+                    <li>At the top of the Playground, look for the <strong>Model</strong> dropdown.</li>
+                    <li>Click it and you will see names like <code className="font-mono text-xs">gpt-4o</code> or <code className="font-mono text-xs">gpt-4o-mini</code>.</li>
+                    <li>Pick the one you want and copy the name exactly.</li>
+                  </ol>
+                  <p className="text-gray-700 dark:text-gray-300 text-sm mt-2">
+                    Paste this into the "Model Name" box in Settings when you want to use OpenAI.
+                  </p>
+                </div>
+
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Once you have the API key, base URL, and model name for the service you want to use, open the <strong>Settings</strong> menu inside the app and paste them in.
+                </p>
+
+              </div>
             </section>
-
-
           </div>
         </div>
       </main>
