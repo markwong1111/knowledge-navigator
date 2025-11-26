@@ -51,59 +51,97 @@ function App() {
   };
 
   // Generate knowledge graph
-  const generateGraph = async () => {
-    if (!inputText.trim() && uploadedFiles.length === 0) {
-      setError('Please enter text or upload files');
-      return;
+ const generateGraph = async () => {
+  if (!inputText.trim() && uploadedFiles.length === 0) {
+    setError('Please enter text or upload files');
+    return;
+  }
+
+  setIsGenerating(true);
+  setError(null);
+
+  console.log('=== STARTING GENERATION ===');
+  console.log('Input text length:', inputText.length);
+  console.log('Uploaded files:', uploadedFiles.length);
+  console.log('Files:', uploadedFiles.map(f => ({ name: f.name, size: f.size, type: f.type })));
+
+  try {
+    const formData = new FormData();
+
+    // Add API credentials to form data
+    formData.append('api_key', apiKey);
+    formData.append('base_url', baseURL);
+    formData.append('model_name', modelName);
+    formData.append('temperature', temp);
+    formData.append('chunk_size', chunkSize);
+    
+    console.log('Settings:', { 
+      apiKey: apiKey ? 'present' : 'missing', 
+      baseURL, 
+      modelName, 
+      temp, 
+      chunkSize 
+    });
+
+    // Add text if present
+    if (inputText.trim()) {
+      formData.append('text', inputText);
+      console.log('Added text input');
     }
 
-    setIsGenerating(true);
-    setError(null);
+    // Add files if present
+    uploadedFiles.forEach((file, index) => {
+      console.log(`Adding file ${index}:`, file.name, file.size, 'bytes');
+      formData.append('files', file);
+    });
 
-    try {
-      const formData = new FormData();
-
-      // Add API credentials to form data
-      formData.append('api_key', apiKey);
-      formData.append('base_url', baseURL);
-      formData.append('model_name', modelName);
-      formData.append('temperature', temp);
-      formData.append('chunk_size', chunkSize);
-      
-
-      // Add text if present
-      if (inputText.trim()) {
-        formData.append('text', inputText);
-      }
-
-      // Add files if present
-      uploadedFiles.forEach(file => {
-        formData.append('files', file);
-      });
-
-      // Call your Python backend API
-     const response = await fetch(`${API_BASE_URL}/generate-graph/`, {
+    console.log('Sending request to:', `${API_BASE_URL}/generate-graph/`);
+    
+    // Call your Python backend API
+    const response = await fetch(`${API_BASE_URL}/generate-graph/`, {
       method: 'POST',
       body: formData,
-      });
-      
-      if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // Set graph HTML for display
-      setGraphHtml(data.html || data.graph_html);
-      setGraphData(data);
-      
-    } catch (err) {
-      setError(err.message || 'Failed to generate knowledge graph');
-      console.error('Error generating graph:', err);
-    } finally {
-      setIsGenerating(false);
+    });
+
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+
+    const data = await response.json();
+    console.log('Response data:', data);
+
+    // Check for errors in response
+    if (!response.ok) {
+      console.error('Response not OK:', data);
+      throw new Error(data.error || `Server error: ${response.status}`);
     }
-  };
+
+    if (data.error) {
+      console.error('Error in data:', data.error);
+      throw new Error(data.error);
+    }
+
+    // Check if HTML is actually present
+    if (!data.html && !data.graph_html) {
+      console.error('No HTML in response:', data);
+      throw new Error('No graph data received from server. Check backend logs for PDF processing errors.');
+    }
+
+    console.log('SUCCESS - Setting graph HTML');
+    // Set graph HTML for display
+    setGraphHtml(data.html || data.graph_html);
+    setGraphData(data);
+    
+  } catch (err) {
+    console.error('=== ERROR CAUGHT ===');
+    console.error('Error type:', err.name);
+    console.error('Error message:', err.message);
+    console.error('Full error:', err);
+    setError(err.message || 'Failed to generate knowledge graph');
+  } finally {
+    setIsGenerating(false);
+    console.log('=== GENERATION COMPLETE ===');
+  }
+};
 
   // Download graph in different formats
   const downloadGraph = (format) => {
