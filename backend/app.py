@@ -2,8 +2,9 @@ import asyncio
 from pathlib import Path
 from typing import List, Dict, Union, Optional
 import pandas as pd
+import traceback # Import traceback to print full errors
 
-# NOTE: Assuming these imports are correct and available
+# Import your modules
 from src.file_reader import read_text_file, read_csv_file, read_pdf_file, read_doc_file
 from src.associational_algorithm import AssociationalOntologyCreator
 from src.generate_knowledge_graph import visualize_graph
@@ -19,73 +20,66 @@ async def generate_knowledge_graph_html(
     chunk_size: Optional[int] = None,
     chunk_overlap: Optional[int] = None
 ) -> Optional[str]:
-    """
-    Generate a knowledge graph HTML from uploaded files or raw text.
     
-    Args:
-        files: List of file dictionaries with keys:
-            - 'name': filename (str)
-            - 'content': file content as bytes or file-like object
-            - 'extension': file extension (e.g., '.txt', '.pdf', '.csv', '.docx')
-        raw_text: Optional raw text string to process
+    print("--- 🔍 DEBUG: Starting generate_knowledge_graph_html ---")
     
-    Returns:
-        - HTML string of the knowledge graph (or None if error)
-    """
-    
-    # Step 1: Read and process document content
     full_text = []
     
+    # 1. Handle Raw Text
     if raw_text:
-        # Note: If raw_text is provided, it bypasses the 'files' list handling 
-        # and is processed first in the 'full_text' list.
         full_text.append({"name": "raw_text", "content": raw_text})
     
+    # 2. Handle Files
     if files:
         for file_dict in files:
             file_name = file_dict.get('name', 'unknown')
-            file_content = file_dict.get('content') # This is the io.BytesIO object from server.py
+            file_content = file_dict.get('content') 
             file_extension = file_dict.get('extension', Path(file_name).suffix).lower()
             
+            print(f"--- 🔍 DEBUG: Processing file: {file_name} ({file_extension}) ---")
+
             try:
-                # 💡 CRITICAL FIX: Reset stream position to 0 before reading.
-                # This ensures the file content is read from the beginning, 
-                # especially important if the stream pointer was moved by Flask 
-                # or a previous operation.
+                # Reset stream position
                 if file_content is not None and hasattr(file_content, 'seek'):
                     file_content.seek(0)
                 
+                content = None
+                
                 if file_extension == ".txt":
-                    text_content = read_text_file(file_content)
-                    full_text.append({"name": file_name, "content": text_content})
-                    
+                    content = read_text_file(file_content)
                 elif file_extension == ".csv":
-                    df = read_csv_file(file_content)
-                    if df is not None:
-                        # Assuming 'read_csv_file' returns a pandas DataFrame
-                        full_text.append({"name": file_name, "content": df}) 
-                        
+                    content = read_csv_file(file_content)
                 elif file_extension == ".pdf":
-                    pdf_content = read_pdf_file(file_content)
-                    full_text.append({"name": file_name, "content": pdf_content})
-                    
+                    # This calls your new src/file_reader.py
+                    content = read_pdf_file(file_content)
                 elif file_extension == ".docx":
-                    doc_content = read_doc_file(file_content)
-                    full_text.append({"name": file_name, "content": doc_content})
-                    
+                    content = read_doc_file(file_content)
                 else:
-                    return None # Unsupported file type
-                    
+                    print(f"Skipping unsupported file type: {file_extension}")
+                    continue
+
+                # Check if content extraction actually worked
+                if content is not None and len(str(content)) > 0:
+                    full_text.append({"name": file_name, "content": content})
+                    print(f"--- 🔍 DEBUG: Successfully read {len(str(content))} chars from {file_name}")
+                else:
+                    print(f"--- 🔍 DEBUG: Warning - Extracted empty content from {file_name}")
+
             except Exception as e:
-                # print(f"Error reading file {file_name}: {str(e)}") # Optional: For debugging
-                return None # Error reading the file
+                # 🛑 THIS WAS THE PROBLEM BEFORE: It was returning None and stopping everything.
+                print(f"!!! CRITICAL ERROR reading file {file_name}: {e}")
+                traceback.print_exc()
+                # We continue to the next file instead of crashing
+                continue 
     
-    # Check if we have any content to process
+    # 3. Validation
     if not full_text:
+        print("--- 🔍 DEBUG: No text extracted from any source. Returning None.")
         return None
     
-    # Step 2: Generate the knowledge graph
+    # 4. Generate Graph
     try:
+        print("--- 🔍 DEBUG: Initializing Ontology Creator ---")
         creator = AssociationalOntologyCreator(
             llm_name=llm_name, 
             api_base=api_base, 
@@ -94,19 +88,23 @@ async def generate_knowledge_graph_html(
             chunk_size=chunk_size, 
             chunk_overlap=chunk_overlap
         )
+        
+        print("--- 🔍 DEBUG: Running create_associational_ontology (This calls the LLM) ---")
         graph_document = await creator.create_associational_ontology(full_text)
         
-        # Validate graph document
         if graph_document and graph_document.nodes:
+            print(f"--- 🔍 DEBUG: Graph generated with {len(graph_document.nodes)} nodes. Visualizing... ---")
             html_output = visualize_graph(graph_document)
             return html_output
         else:
-            return None # Graph generation failed
+            print("--- 🔍 DEBUG: Graph document was empty or had no nodes. ---")
+            return None 
             
     except Exception as e:
-        # print(f"An error occurred during graph generation: {str(e)}") # Optional: For debugging
+        print(f"!!! CRITICAL ERROR during graph generation: {e}")
+        traceback.print_exc()
         return None
-    
+
 # --- Synchronous Wrapper ---
 def generate_knowledge_graph_html_sync(
     files: Optional[List[Dict[str, Union[str, bytes]]]] = None,
@@ -118,22 +116,9 @@ def generate_knowledge_graph_html_sync(
     chunk_size: Optional[int] = None,
     chunk_overlap: Optional[int] = None
 ) -> Optional[str]:
-    """
-    Synchronous wrapper for generate_knowledge_graph_html.
-    
-    Args:
-        files: List of file dictionaries (see async version for details)
-        raw_text: Optional raw text string to process
-    
-    Returns:
-        HTML string (or None if error)
-    """
-    # Note: raw_text argument was missing in the original call here, 
-    # but it seems the POST request in server.py only uses the 'files' list 
-    # which includes the text input wrapped as a file. Keeping the call as intended 
-    # for the server.py structure.
     return asyncio.run(generate_knowledge_graph_html(
         files, 
+        raw_text=raw_text, # Passed raw_text correctly
         api_key=api_key, 
         api_base=api_base, 
         llm_name=llm_name, 
@@ -141,19 +126,3 @@ def generate_knowledge_graph_html_sync(
         chunk_size=chunk_size, 
         chunk_overlap=chunk_overlap
     ))
-
-
-# Example usage:
-if __name__ == "__main__":
-    # Example 1: Process raw text
-    raw_text = """Example text for graph generation."""
-    # Assuming the user has credentials defined or it's being tested without LLM
-    html = generate_knowledge_graph_html_sync(raw_text=raw_text)
-    
-    if html:
-        print("HTML generated successfully!")
-        # Save to file
-        with open("knowledge_graph.html", "w", encoding="utf-8") as f:
-            f.write(html)
-    else:
-        print("Error: Failed to generate HTML")
