@@ -65,6 +65,7 @@ def run_algorithm():
             extension = '.' + file.filename.split('.')[-1].lower()
             # Read file content into BytesIO
             file_content = io.BytesIO(file.read())
+            file_content.seek(0)
             processed_files.append({
                 "name": file.filename,
                 "extension": extension,
