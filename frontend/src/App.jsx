@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, FileText, Download, Loader2, X, Paperclip, Settings } from 'lucide-react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'; // OR just Link if you don't need the others here
+import { Upload, FileText, Download, Loader2, X, Paperclip, Settings, Book } from 'lucide-react';
 import SettingsMenu from './components/SettingsMenu';
+
 
 // TODO - update to backend URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
@@ -233,21 +235,39 @@ function App() {
         // Input View
         <div className="flex-1 flex flex-col">
           {/* Header */}
-          <div className="px-4 py-3 border-b dark:border-gray-700 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex px-4 py-2 items-center justify-between w-full">
+            {/* LEFT SIDE — LOGO */}
+            <div className="flex items-center gap-2">
               <img 
                 src="https://ideaspaces.net/wp-content/uploads/2024/06/cropped-ISbluelogocircleSM-1-1.png" 
                 alt="Logo" 
                 className="h-8 w-8" 
               />
             </div>
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-              title="Settings"
-            >
-              <Settings size={20} className="text-gray-600 dark:text-gray-400" />
-            </button>
+
+            {/* RIGHT SIDE — DOCS + SETTINGS */}
+            <div className="flex items-center gap-3">
+              <Link 
+                to="/docs"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium 
+                          bg-white dark:bg-gray-700 
+                          text-gray-700 dark:text-gray-200 
+                          border border-gray-200 dark:border-gray-600 
+                          rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 
+                          transition-colors"
+              >
+                <Book size={18} className="text-gray-600 dark:text-gray-300" />
+                Documentation
+              </Link>
+
+              <button
+                onClick={() => setSettingsOpen(true)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                title="Settings"
+              >
+                <Settings size={20} className="text-gray-600 dark:text-gray-400" />
+              </button>
+            </div>
           </div>
 
           {/* Main Content */}
